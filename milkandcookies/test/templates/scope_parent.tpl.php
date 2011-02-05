@@ -1,0 +1,1 @@
+A guy walks into a <? $this->insert('scope_child.tpl.php', array('result' => 'ouch')) ?>

@@ -2,6 +2,7 @@
 
 require_once('PHPUnit/Framework/TestCase.php');
 require_once('milkandcookies/Template.php');
+require_once('milkandcookies/Options.php');
 
 
 class SillyFilter extends mc_TemplateFilter
@@ -17,7 +18,7 @@ class TemplateTest extends PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
-        mc_Template::set_template_directory(dirname(__FILE__).DIRECTORY_SEPARATOR.'templates');
+        O::set('path.templates', dirname(__FILE__).DIRECTORY_SEPARATOR.'templates');
     }
     
     public function test_plain()

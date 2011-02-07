@@ -9,8 +9,8 @@
  * other templates.
  * 
  * Path resolution is, by default, the same as whatever you are used to with PHP
- * on your OS. You can set a base directory by calling mc_Template::set_template_directory().
- * Then all the paths will be relative to this directory.
+ * on your OS. You can set a base directory by calling mc_Options::set('path.templates', '/path/to/templates')
+ * then all the paths will be relative to this directory.
  * 
  * A note about scope: variables set directly on a template are available within
  * the template file. These variables are also available to any included templates.
@@ -39,17 +39,6 @@ class mc_Template
     private $path;
     private $vars;
     private $filters;
-    private static $tpl_dir = '';
-    
-    /**
-     * Set the base directory used to resolve paths.
-     * 
-     * @param string $path
-     */
-    public static function set_template_directory($path)
-    {
-        self::$tpl_dir = $path;
-    }
     
     /**
      * Create a new template.
@@ -58,7 +47,7 @@ class mc_Template
      */
     public function __construct($path)
     {
-        $path = self::$tpl_dir.DIRECTORY_SEPARATOR.$path;
+        $path = O::path('templates', $path);
         $_path = realpath($path);
         
         if (!$_path)
@@ -139,21 +128,6 @@ class mc_Template
     public function add_filter($filter)
     {
         $this->filters[] = $filter;
-    }
-}
-
-
-/**
- * A template with some HTML-specific methods.
- */
-class mc_HTMLTemplate extends mc_Template
-{
-    private $css;
-    private $js;
-    
-    public function __construct($path)
-    {
-        parent::__construct($path);
     }
 }
 

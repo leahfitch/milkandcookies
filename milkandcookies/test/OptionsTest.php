@@ -10,6 +10,13 @@ class OptionsTest extends PHPUnit_Framework_TestCase
     {
         mc_Options::set('key', 'value');
         $this->assertEquals('value', mc_Options::get('key'));
+        
+        mc_options::set(array(
+            'foo' => 'bar',
+            'skidoo' => 23
+        ));
+        $this->assertEquals('bar', mc_Options::get('foo'));
+        $this->assertEquals(23, mc_Options::get('skidoo'));
     }
     
     
@@ -40,7 +47,7 @@ class OptionsTest extends PHPUnit_Framework_TestCase
         O::set_handler('foo', function ($a, $b) { return 'foo '.$b; });
         $this->assertEquals('foo bar', O::get('foo', 'bar'));
         O::set_handler('path.foo', function ($a, $b) { return 'foo://'.$b; });
-        $this->assertEquals('foo://bar', O::path('foo', 'bar'));
+        $this->assertEquals('foo://bar/baz', O::path('foo', 'bar', 'baz'));
     }
 }
 

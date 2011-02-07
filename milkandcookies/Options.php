@@ -17,14 +17,46 @@ class mc_Options
     
     
     /**
-     * Set a value. Just like an array.
+     * Set a value or values.
+     * 
+     * If the first argument is an array it is assumed to be a map and used to
+     * update the options map overwriting any existing options with the same key.
+     * Otherwise this method sets a single option.
      *
-     * @param string $key
+     * @param string|array $key
      * @param mixed $value
      */
-    public static function set($key, $value)
+    public static function set($key)
     {
-        self::$options[$key] = $value;
+        if (is_array($key))
+        {
+            self::$options = array_merge(self::$options, $key);
+        }
+        else
+        {
+            if (func_num_args() == 1)
+            {
+                return;
+            }
+            
+            self::$options[$key] = func_get_arg(1);
+        }
+    }
+    
+    
+    /**
+     * Set a function that returns the value for a particular key.
+     * 
+     * An option handler will be called with the value of the requested key and then
+     * whatever arguments are passed to the mc_options::get() or mc_Options::set()
+     * call after the key argument.
+     * 
+     * @param string $key
+     * @param callback $handler
+     */
+    public static function set_handler($key, $handler)
+    {
+        self::$handlers[$key] = $handler;
     }
     
     
@@ -79,45 +111,30 @@ class mc_Options
     public static function path($path_option)
     {
         $key = 'path.'.$path_option;
-        $base = isset(self::$options[$key]) ? self::$options[$key] : null;
+        $base = isset(self::$options[$key]) ? self::$options[$key] : '';
         $args = func_get_args();
-        
-        if (isset(self::$handlers[$key]))
-        {
-            $args[0] = $base;
-            return call_user_func_array(self::$handlers[$key], $args);
-        }
-        
-        if (count($args) == 1)
-        {
-            return $base;
-        }
         
         $parts = array();
         $sep = DIRECTORY_SEPARATOR;
         
-        foreach (array_slice($args, 1) as $p)
+        if (count($args) > 1)
         {
-            $parts[] = implode($sep, array_filter(preg_split('@\\'.$sep.'\b@', $p)));
+            foreach (array_slice($args, 1) as $p)
+            {
+                $parts[] = implode($sep, array_filter(preg_split('@\\'.$sep.'\b@', $p)));
+            }
+        }
+        
+        if (isset(self::$handlers[$key]))
+        {
+            return call_user_func_array(self::$handlers[$key], array($base, implode($sep, $parts)));
+        }
+        else if (count($args) == 1)
+        {
+            return $base;
         }
         
         return implode($sep, array($base, implode($sep, $parts)));
-    }
-    
-    
-    /**
-     * Set a function that returns the value for a particular key.
-     * 
-     * An option handler will be called with the value of the requested key and then
-     * whatever arguments are passed to the mc_options::get() or mc_Options::set()
-     * call after the key argument.
-     * 
-     * @param string $key
-     * @param callback $handler
-     */
-    public static function set_handler($key, $handler)
-    {
-        self::$handlers[$key] = $handler;
     }
 }
 

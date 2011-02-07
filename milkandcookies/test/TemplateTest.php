@@ -3,6 +3,16 @@
 require_once('PHPUnit/Framework/TestCase.php');
 require_once('milkandcookies/Template.php');
 
+
+class SillyFilter extends mc_TemplateFilter
+{
+    public function run($data)
+    {
+        return 'filter';
+    }
+}
+
+
 class TemplateTest extends PHPUnit_Framework_TestCase
 {
     public function setUp()
@@ -28,6 +38,15 @@ class TemplateTest extends PHPUnit_Framework_TestCase
         $tpl = new mc_Template('scope_parent.tpl.php');
         $tpl->foo = 'bar';
         $this->assertEquals('A guy walks into a bar...ouch.', $tpl->to_string());
+    }
+    
+    
+    public function test_filter()
+    {
+        $tpl = new mc_Template('simple.tpl.php');
+        $tpl->type = 'foo';
+        $tpl->add_filter(new SillyFilter);
+        $this->assertEquals('filter', $tpl->to_string());
     }
 }
 

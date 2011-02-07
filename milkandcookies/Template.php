@@ -38,6 +38,7 @@ class mc_Template
 {
     private $path;
     private $vars;
+    private $filters;
     private static $tpl_dir = '';
     
     /**
@@ -67,6 +68,7 @@ class mc_Template
         
         $this->path = $_path;
         $this->vars = array();
+        $this->filters = array();
     }
     
     
@@ -83,6 +85,11 @@ class mc_Template
 		eval('?>'.$_data.'<?');
 		$_data = ob_get_contents();
 		ob_end_clean();
+		
+		foreach ($this->filters as $f)
+		{
+		    $_data = $f->run($_data);
+		}
 		
 		return $_data;
     }
@@ -120,6 +127,98 @@ class mc_Template
     {
         $this->vars[$k] = $v;
     }
+    
+    
+    /**
+     * Add a filter to be run after the template is evaluated.
+     * 
+     * Filters are run in the order they are added.
+     *
+     * @param mc_TemplateFilter $filter
+     */
+    public function add_filter($filter)
+    {
+        $this->filters[] = $filter;
+    }
 }
 
+
+/**
+ * A template with some HTML-specific methods.
+ */
+class mc_HTMLTemplate extends mc_Template
+{
+    private $css;
+    private $js;
+    
+    public function __construct($path)
+    {
+        parent::__construct($path);
+    }
+}
+
+
+/**
+ * Filters take an input string, perform some fitlering, and return a string.
+ */
+abstract class mc_TemplateFilter
+{
+    abstract public function run($data);
+}
+
+
+/**
+ * HTML-aware whitespace removal filter
+ */
+class mc_WhitespaceTemplateFilter
+{
+    // thanks smarty team
+	public function run($source)
+	{
+		// Pull out the script blocks
+		 preg_match_all("!<script[^>]+>.*?</script>!is", $source, $match);
+		 $_script_blocks = $match[0];
+		 $source = preg_replace("!<script[^>]+>.*?</script>!is",
+										'@@@MANDK:TRIM:SCRIPT@@@', $source);
+		 // Pull out the pre blocks
+		 preg_match_all("!<pre>.*?</pre>!is", $source, $match);
+		 $_pre_blocks = $match[0];
+		 $source = preg_replace("!<pre>.*?</pre>!is",
+										'@@@MANDK:TRIM:PRE@@@', $source);
+	
+		 // Pull out the textarea blocks
+		 preg_match_all("!<textarea[^>]+>.*?</textarea>!is", $source, $match);
+		 $_textarea_blocks = $match[0];
+		 $source = preg_replace("!<textarea[^>]+>.*?</textarea>!is",
+										'@@@MANDK:TRIM:TEXTAREA@@@', $source);
+	
+		 // remove all leading spaces, tabs and carriage returns NOT
+		 // preceeded by a php close tag.
+		 $source = trim(preg_replace('@[ \t][ \t]+@', ' ', $source));
+		 $source = trim(preg_replace('/((?<!\?>)\n)[\s]+/', '\1', $source));
+         
+		 // replace script blocks
+		 $this->trimwhitespace_replace("@@@MANDK:TRIM:SCRIPT@@@",$_script_blocks, $source);
+         
+         
+		 // replace pre blocks
+		 $this->trimwhitespace_replace("@@@MANDK:TRIM:PRE@@@",$_pre_blocks, $source);
+	
+		 // replace textarea blocks
+		 $this->trimwhitespace_replace("@@@MANDK:TRIM:TEXTAREA@@@",$_textarea_blocks, $source);
+	
+		 return $source;
+	}
+	
+	private function trimwhitespace_replace($search_str, $replace, &$subject)
+	{
+		 $_len = strlen($search_str);
+		 $_pos = 0;
+		 for ($_i=0, $_count=count($replace); $_i<$_count; $_i++)
+			  if (($_pos=strpos($subject, $search_str, $_pos))!==false)
+					$subject = substr_replace($subject, $replace[$_i], $_pos, $_len);
+			  else
+					break;
+	}
+}
 ?>

@@ -1,7 +1,11 @@
 Milk & Cookies is a PHP application development library. Its goal is to remove
 as much drudgery as possible from web application development without
-enforcing a particular methodology. To that end, most of what you will find here
-are standalone libraries crafted to solve a particular problem or implement a pattern.
+enforcing the use of a large framework. Here you will find tools that make writing web
+services fast and fun, help tie together your system into simple, consistent APIs,
+leverage PHP's innate templating abilities and produce well-optimized web pages
+without a lot of mucking about.
 
 This project was created by Elisha Cook in 2006 and has been in continuous
 production use since that time. This is the third major version.
+
+NOTE - This version is a major refactoring and major components are still in progress.

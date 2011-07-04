@@ -1,4 +1,5 @@
 <?
+require_once('Options.php');
 
 /**
  * A Handler could not be found for a path.
@@ -221,6 +222,11 @@ abstract class mc_Handler
         }
         
         $cls = $this->children[$name];
+        
+        if (!class_exists($cls))
+        {
+            require_once(mc_Options::path('handlers', $cls.'.php'));
+        }
         
         return new $cls;
     }

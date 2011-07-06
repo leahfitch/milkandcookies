@@ -13,7 +13,7 @@ class mc_ListValidator extends mc_Validator
 	{
 		if (!is_array($value))
 		{
-			throw new ValidatorException('Expected a list.');
+			throw new mc_InvalidException('Expected a list.');
 		}
 		
 		$result = array();

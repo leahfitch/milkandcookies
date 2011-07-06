@@ -15,7 +15,7 @@ class mc_BoundingBoxValidator extends mc_Validator
 	    {
 	        if (!is_string($value))
 	        {
-	            throw new ValidatorException('Must be a string or array.');
+	            throw new mc_InvalidException('Must be a string or array.');
 	        }
 	        
 	        $parts = explode(',', $value);
@@ -23,14 +23,14 @@ class mc_BoundingBoxValidator extends mc_Validator
         
         if (count($parts) != 4)
         {
-            throw new ValidatorException('Must be of the form "<lat1>,<lng1>,<lat2>,<lng2>"');
+            throw new mc_InvalidException('Must be of the form "<lat1>,<lng1>,<lat2>,<lng2>"');
         }
         
         foreach ($parts as $p)
         {
             if ($p < -180 || $p > 180)
             {
-                throw new ValidatorException('Values must be between -180 and 180.');
+                throw new mc_InvalidException('Values must be between -180 and 180.');
             }
         }
         

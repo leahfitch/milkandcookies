@@ -17,10 +17,10 @@ class mc_OneOfValidator extends mc_Validator
 		    {
 		        return $v->validate($value);
 		    }
-		    catch (ValidatorException $e) {}
+		    catch (mc_InvalidException $e) {}
 		}
 		
-		throw new ValidatorException('Does not meet the requirements of any validator.');
+		throw new mc_InvalidException('Does not meet the requirements of any validator.');
 	}
 }
 

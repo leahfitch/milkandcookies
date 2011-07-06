@@ -8,12 +8,12 @@ class mc_UrlValidator extends mc_Validator
 	{
 		if (!is_string($value))
 		{
-			throw new ValidatorException('Invalid URL');
+			throw new mc_InvalidException('Invalid URL');
 		}
 		$pattern = '@^(http(s)?://)([^\s<>])+$@';
 		if (!preg_match($pattern, $value))
 		{
-			throw new ValidatorException($value.' is not a valid URL');
+			throw new mc_InvalidException($value.' is not a valid URL');
 		}
 	}
 }

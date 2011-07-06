@@ -16,7 +16,7 @@ class mc_TimeValidator extends mc_Validator
         
 	    if (!$value)
         {
-            throw new ValidatorException('Unrecognized date/time format');
+            throw new mc_InvalidException('Unrecognized date/time format');
         }
         
         return $value;

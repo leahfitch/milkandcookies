@@ -8,7 +8,7 @@ class mc_FloatValidator extends mc_Validator
 	{
 		if (!is_numeric($value))
 		{
-			throw new ValidatorException('The value is not a float');
+			throw new mc_InvalidException('The value is not a float');
 		}
 		
 		return (float) $value;

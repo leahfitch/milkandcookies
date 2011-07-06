@@ -17,20 +17,20 @@ class mc_CSVValidator extends mc_Validator
 		{
 			if (!is_string($value) && ($value != ''))
 			{
-				throw new ValidatorException('Invalid text value');
+				throw new mc_InvalidException('Invalid text value');
 			}
 			if ($this->minlength != null)
 			{
 				if (strlen($value) < $this->minlength)
 				{
-					throw new ValidatorException('The text is too short (min. '.$this->minlength.' characters)');
+					throw new mc_InvalidException('The text is too short (min. '.$this->minlength.' characters)');
 				}
 			}
 			if ($this->maxlength != null)
 			{
 				if (strlen($value) > $this->maxlength)
 				{
-					throw new ValidatorException('The text is too long (max. '.$this->maxlength.' characters)');
+					throw new mc_InvalidException('The text is too long (max. '.$this->maxlength.' characters)');
 				}
 			}
 			

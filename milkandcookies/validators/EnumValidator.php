@@ -13,7 +13,7 @@ class mc_EnumValidator extends mc_Validator
 	{
 		if (!in_array($value, $this->values))
         {
-            throw new ValidatorException('Expected one of "'.implode('", "', $this->values).'"');
+            throw new mc_InvalidException('Expected one of "'.implode('", "', $this->values).'"');
         }
 	}
 }

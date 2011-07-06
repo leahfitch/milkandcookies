@@ -9,14 +9,14 @@ class mc_DimensionValidator extends mc_Validator
 	{
 	    if (!is_string($value))
 	    {
-	        throw new ValidatorException('Must be a string.');
+	        throw new mc_InvalidException('Must be a string.');
 	    }
 	    
         $parts = explode('x', $value);
         
         if (count($parts) != 2)
         {
-            throw new ValidatorException('Must be of the form "<width>x<height>"');
+            throw new mc_InvalidException('Must be of the form "<width>x<height>"');
         }
         
         $w = (int) $parts[0];

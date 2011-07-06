@@ -15,7 +15,7 @@ class mc_LatLngValidator extends mc_Validator
 	    {
 	        if (!is_string($value))
 	        {
-	            throw new ValidatorException('Must be a string.');
+	            throw new mc_InvalidException('Must be a string.');
 	        }
 	        
 	        $parts = explode(',', $value);
@@ -23,7 +23,7 @@ class mc_LatLngValidator extends mc_Validator
         
         if (count($parts) != 2)
         {
-            throw new ValidatorException('Must be of the form "<lat>,<lng>"');
+            throw new mc_InvalidException('Must be of the form "<lat>,<lng>"');
         }
         
         $lat = (float) $parts[0];
@@ -31,7 +31,7 @@ class mc_LatLngValidator extends mc_Validator
         
         if ($lat < -180 || $lat > 180 || $lng < -180 || $lng > 180)
         {
-            throw new ValidatorException('Values must be between -180 and 180.');
+            throw new mc_InvalidException('Values must be between -180 and 180.');
         }
         
         return array($lat,$lng);

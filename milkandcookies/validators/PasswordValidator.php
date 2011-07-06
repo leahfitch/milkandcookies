@@ -56,14 +56,14 @@ class mc_PasswordValidator extends mc_Validator
 	{
 		if (!is_string($value))
 		{
-			throw new ValidatorException('Invalid password');
+			throw new mc_InvalidException('Invalid password');
 		}
 		
 		if ($this->minlength != null)
 		{
 			if (strlen($value) < $this->minlength)
 			{
-				throw new ValidatorException('The password must be at least '.$this->minlength
+				throw new mc_InvalidException('The password must be at least '.$this->minlength
 					.' characters long');
 			}
 		}
@@ -105,7 +105,7 @@ class mc_PasswordValidator extends mc_Validator
 		if (count($errors) > 0)
 		{
 			$errormsg = 'The password must contain '.implode(', ',$errors);
-			throw new ValidatorException($errormsg);
+			throw new mc_InvalidException($errormsg);
 		}
 	}
 }

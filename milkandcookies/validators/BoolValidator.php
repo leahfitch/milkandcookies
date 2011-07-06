@@ -23,7 +23,7 @@ class mc_BoolValidator extends mc_Validator
 				($value != '0')
             )
 		{
-			throw new ValidatorException('The value is not a boolean');
+			throw new mc_InvalidException('The value is not a boolean');
 		}
 		
 		return (bool)((int)$value);

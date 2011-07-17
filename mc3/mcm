@@ -1,0 +1,251 @@
+#!/usr/bin/php
+<?
+require_once('mc3/framework.php');
+mcinit(dirname(__FILE__));
+
+require_once('mc3/SystemComponent.php');
+mc_ComponentRegistry::register('system', O::get('system_component_class'));
+
+mc_Bouncer::set('internal', 1);
+
+class mc_CLI
+{
+    public function handle()
+	{
+		if (count($_SERVER['argv']) < 2)
+        {
+            $this->usage();
+        }
+        
+        $method = $_SERVER['argv'][1];
+        
+        if ($method == 'help')
+        {
+            $this->help();
+            return;
+        }
+        
+        try
+		{
+		    $parts = explode('.', $method);
+		    
+		    if (count($parts) != 2)
+		    {
+		        $this->usage();
+		        return;
+		    }
+		    
+		    $component = mc_ComponentRegistry::get($parts[0]);
+		    $argnames = array_keys($component->get_arguments($parts[1]));
+		    $args = $this->parse_args($argnames);
+		    $result = $component->call($parts[1], $args);
+		    mcdie($result);
+		}
+		catch (mc_ComponentNotFoundException $e)
+		{
+			$this->end('Unknown method: '. $method);
+		}
+		catch (mc_ComponentMethodNotFoundException $e)
+		{
+			$this->end('Unknown method: '. $method);
+		}
+		catch (mc_CompoundInvalidException $e)
+		{
+		    $errors = array();
+		    
+		    foreach ($e->errors as $k => $v)
+		    {
+		        $errors[] = $k.': '.$v;
+		    }
+		    
+		    $this->end(implode("\n", $errors));
+		}
+		catch (Exception $e)
+		{
+			$this->end($e->getMessage()."\n".$e->getTraceAsString());
+		}
+	}
+	
+	public function help()
+	{
+	    if (isset($_SERVER['argv'][2]))
+	    {
+	        $parts = explode('.', $_SERVER['argv'][2]);
+	        
+	        if (count($parts) == 1)
+	        {
+	            $this->help_show_component($parts[0]);
+	        }
+	        else if (count($parts) == 2)
+	        {
+	            $this->help_show_component_method($parts[0], $parts[1]);
+	        }
+	        else
+	        {
+	            $this->usage();
+	        }
+	    }
+	    else
+	    {
+	        $this->help_show_components();
+	    }
+	}
+	
+	public function help_show_components()
+	{
+	    if (count(mc_ComponentRegistry::$components) == 0)
+	    {
+	        echo "There are no registered components.\n";
+	    }
+	    
+	    echo "\nComponents:\n\n";
+	    
+	    $lines = array();
+	    
+	    foreach (mc_ComponentRegistry::$components as $k => $v)
+	    {
+	        $cls = new ReflectionClass($v);
+	        $comment_lines = explode("\n", $this->get_comment($cls));
+	        $lines[] = array($k, count($comment_lines) > 0 ? $comment_lines[0] : '');
+	    }
+	    
+	    $this->tabbed_print($lines);
+	    echo "\n";
+	}
+	
+	public function help_show_component($name)
+	{
+	    $c = mc_ComponentRegistry::get($name);
+	    echo "\nComponent: $name\n";
+	    
+	    $cls = new ReflectionClass($c);
+	    $comment = $this->get_comment($cls);
+	    
+	    if ($comment)
+	    {
+	        echo $comment."\n\n";
+	    }
+	    
+	    echo "Methods:\n";
+	    
+	    $lines = array();
+	    
+	    foreach ($c->exposed as $k => $v)
+	    {
+	        $method = $cls->getMethod($k);
+	        $comment_lines = explode("\n", $this->get_comment($method));
+	        $lines[] = array($k, count($comment_lines) > 0 ? $comment_lines[0] : '');
+	    }
+	    
+	    $this->tabbed_print($lines);
+	    echo "\n";
+	}
+	
+	public function help_show_component_method($component_name, $method_name)
+	{
+	    $c = mc_ComponentRegistry::get($component_name);
+	    $method = new ReflectionMethod($c, $method_name);
+	    echo "\nMethod: $component_name.$method_name\n";
+	    
+	    $comment = $this->get_comment($method);
+	    
+	    if ($comment)
+	    {
+	        echo $comment."\n\n";
+	    }
+	    
+	    echo "Arguments:\n";
+	    
+	    foreach ($c->get_arguments($method_name) as $k => $v)
+	    {
+	        echo "$k\t".get_class($v)."\n";
+	    }
+	    
+	    echo "\n";
+	}
+	
+	public function usage()
+    {
+        die('Usage: '.basename($_SERVER['argv'][0]).' <command> [<options>]'."\n".
+            'Hint: try `'.basename($_SERVER['argv'][0]).' help`'."\n");
+    }
+    
+    public function end($msg='')
+    {
+        die($msg."\n");
+    }
+    
+    public function parse_args($argnames)
+    {
+        $args = array();
+        
+        foreach ($_SERVER['argv'] as $a)
+        {
+            $matches = array();
+            
+            if (preg_match('@^\-\-([a-zA-Z\-\_]+)[=\s](.*)@', $a, $matches))
+            {
+                if (in_array($matches[1], $argnames))
+                {
+                    $args[$matches[1]] = $matches[2];
+                }
+            }
+        }
+        
+        return $args;
+    }
+    
+    public function tabbed_print($lines)
+    {
+        $longest = 0;
+        
+        foreach ($lines as $l)
+        {
+            if (strlen($l[0]) > $longest)
+            {
+                $longest = strlen($l[0]);
+            }
+        }
+        
+        foreach ($lines as $l)
+        {
+            echo $l[0];
+            
+            for ($i=0; $i<$longest-strlen($l[0]); $i++)
+            {
+                echo ' ';
+            }
+            
+            echo "\t".$l[1]."\n";
+        }
+    }
+    
+    public function get_comment($reflection)
+    {
+        $comment = $reflection->getDocComment();
+        
+        if (!$comment)
+        {
+            return '';
+        }
+        
+        $lines = explode("\n", $comment);
+        $cleaned_lines = array();
+        
+        foreach ($lines as $line)
+        {
+            $cleaned_line = preg_replace('@^\s*(/?\*+/?)(\s+)?@i', '', $line);
+            
+            if ($cleaned_line)
+            {
+                $cleaned_lines[] = $cleaned_line;
+            }
+        }
+        
+        return implode("\n", $cleaned_lines);
+    }
+}
+
+$cli = new mc_CLI();
+$cli->handle();
+?>
